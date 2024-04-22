@@ -19,13 +19,13 @@ if ENVIRONMENT:
     INSTA_PASSWORD = os.environ.get('INSTA_PASSWORD', None)
 else:
     # Fill the Values
-    API_ID = 0
-    API_HASH = ""
-    BOT_TOKEN = ""
-    DATABASE_URL = ""
+    API_ID = 10471716
+    API_HASH = "f8a1b21a13af154596e2ff5bed164860"
+    BOT_TOKEN = "6999401413:AAHgF1ZpUsCT5MgWX1Wky7GbegyeHvzi2AU"
+    DATABASE_URL = "mongodb+srv://appuz:chrijismiappuz@cluster0.yngvhc2.mongodb.net/?retryWrites=true&w=majority"
     DATABASE_URL = DATABASE_URL.replace("postgres", "postgresql")
-    MUST_JOIN = "StarkBots"
+    MUST_JOIN = "botio_devs"
     if MUST_JOIN.startswith("@"):
         MUST_JOIN = MUST_JOIN[1:]
-    INSTA_USERNAME = ""
-    INSTA_PASSWORD = ""
+    INSTA_USERNAME = "botio_devs"
+    INSTA_PASSWORD = "Appus123/"
