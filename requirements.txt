@@ -1,4 +1,5 @@
 pyrogram
+pymongo
 pyromod
 TgCrypto
 SQLAlchemy~=1.4.21
