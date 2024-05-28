@@ -1,31 +1,75 @@
 import os
+import requests
+from dotenv import load_dotenv
+import instaloader
+import telebot
 
-ENVIRONMENT = os.environ.get('ENVIRONMENT', False)
+# Load environment variables from .env file
+load_dotenv()
 
-if ENVIRONMENT:
+# Instagram credentials
+INSTAGRAM_API_ID = os.getenv('INSTAGRAM_API_ID')
+INSTAGRAM_API_SECRET = os.getenv('INSTAGRAM_API_SECRET')
+INSTAGRAM_USERNAME = os.getenv('INSTAGRAM_USERNAME')
+INSTAGRAM_PASSWORD = os.getenv('INSTAGRAM_PASSWORD')
+
+# Telegram bot token
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+
+# Initialize Instaloader
+L = instaloader.Instaloader()
+
+# Log in to Instagram
+try:
+    L.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+except instaloader.exceptions.ConnectionException as e:
+    print(f"Failed to login to Instagram: {e}")
+    exit(1)
+
+def download_instagram_post(url):
     try:
-        API_ID = int(os.environ.get('API_ID', 0))
-    except ValueError:
-        raise Exception("Your API_ID is not a valid integer.")
-    API_HASH = os.environ.get('API_HASH', None)
-    BOT_TOKEN = os.environ.get('BOT_TOKEN', None)
-    DATABASE_URL = os.environ.get('DATABASE_URL', None)
-    DATABASE_URL = DATABASE_URL.replace("postgres", "postgresql")  # Sqlalchemy dropped support for "postgres" name.
-    # https://stackoverflow.com/questions/62688256/sqlalchemy-exc-nosuchmoduleerror-cant-load-plugin-sqlalchemy-dialectspostgre
-    MUST_JOIN = os.environ.get('MUST_JOIN', None)
-    if MUST_JOIN.startswith("@"):
-        MUST_JOIN = MUST_JOIN.replace("@", "")
-    INSTA_USERNAME = os.environ.get('INSTA_USERNAME', None)
-    INSTA_PASSWORD = os.environ.get('INSTA_PASSWORD', None)
-else:
-    # Fill the Values
-    API_ID = 10471716
-    API_HASH = "f8a1b21a13af154596e2ff5bed164860"
-    BOT_TOKEN = "6928476494:AAG6ypYkw5bPm3ufRxMTlksUQS0R-nUQwnU"
-    DATABASE_URL = "mongodb+srv://proceed58:proceed58@cluster0.p5s9ym5.mongodb.net/?retryWrites=true&w=majority"
-    DATABASE_URL = DATABASE_URL.replace("postgres", "postgresql")
-    MUST_JOIN = "vvvci"
-    if MUST_JOIN.startswith("@"):
-        MUST_JOIN = MUST_JOIN[1:]
-    INSTA_USERNAME = "botio_devs"
-    INSTA_PASSWORD = "Appus123/"
+        post_shortcode = url.split("/")[-2]
+        post = instaloader.Post.from_shortcode(L.context, post_shortcode)
+        download_path = f"./downloads/{post.owner_username}"
+        os.makedirs(download_path, exist_ok=True)
+        L.download_post(post, target=download_path)
+        files = os.listdir(download_path)
+        if files:
+            return download_path, files
+        else:
+            return download_path, []
+    except instaloader.exceptions.BadResponseException as e:
+        return None, f"حدث خطأ أثناء التحميل: قد يكون الرابط غير صالح أو قد تحتاج لتسجيل الدخول."
+    except Exception as e:
+        return None, f"حدث خطأ أثناء التحميل: {str(e)}"
+
+# Initialize Telegram bot
+bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "مرحباً! أرسل رابط Instagram لتحميل المحتوى.")
+
+@bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    url = message.text
+    download_path, response = download_instagram_post(url)
+    if download_path:
+        for file in response:
+            file_path = os.path.join(download_path, file)
+            with open(file_path, 'rb') as f:
+                if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                    bot.send_photo(message.chat.id, f)
+                elif file.lower().endswith('.mp4'):
+                    bot.send_video(message.chat.id, f)
+                else:
+                    bot.send_document(message.chat.id, f)
+        # Delete files after uploading
+        for file in response:
+            os.remove(os.path.join(download_path, file))
+        os.rmdir(download_path)
+    else:
+        bot.reply_to(message, response)
+
+# Start polling
+bot.polling()
