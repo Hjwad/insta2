@@ -24,7 +24,7 @@ else:
     BOT_TOKEN = "6928476494:AAG6ypYkw5bPm3ufRxMTlksUQS0R-nUQwnU"
     DATABASE_URL = "mongodb+srv://appuz:chrijismiappuz@cluster0.yngvhc2.mongodb.net/?retryWrites=true&w=majority"
     DATABASE_URL = DATABASE_URL.replace("postgres", "postgresql")
-    MUST_JOIN = "botio_devs"
+    MUST_JOIN = "vvvci"
     if MUST_JOIN.startswith("@"):
         MUST_JOIN = MUST_JOIN[1:]
     INSTA_USERNAME = "botio_devs"
