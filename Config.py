@@ -21,7 +21,7 @@ else:
     # Fill the Values
     API_ID = 10471716
     API_HASH = "f8a1b21a13af154596e2ff5bed164860"
-    BOT_TOKEN = "6999401413:AAHgF1ZpUsCT5MgWX1Wky7GbegyeHvzi2AU"
+    BOT_TOKEN = "6928476494:AAG6ypYkw5bPm3ufRxMTlksUQS0R-nUQwnU"
     DATABASE_URL = "mongodb+srv://appuz:chrijismiappuz@cluster0.yngvhc2.mongodb.net/?retryWrites=true&w=majority"
     DATABASE_URL = DATABASE_URL.replace("postgres", "postgresql")
     MUST_JOIN = "botio_devs"
