@@ -1,5 +1,7 @@
 import os
 import requests
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ChatAction
 from dotenv import load_dotenv
 import instaloader
 import telebot
@@ -8,8 +10,6 @@ import telebot
 load_dotenv()
 
 # Instagram credentials
-INSTAGRAM_API_ID = os.getenv('INSTAGRAM_API_ID')
-INSTAGRAM_API_SECRET = os.getenv('INSTAGRAM_API_SECRET')
 INSTAGRAM_USERNAME = os.getenv('INSTAGRAM_USERNAME')
 INSTAGRAM_PASSWORD = os.getenv('INSTAGRAM_PASSWORD')
 
@@ -19,12 +19,13 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 # Initialize Instaloader
 L = instaloader.Instaloader()
 
-# Log in to Instagram
+# Log in to Instagram and save session
 try:
+    L.load_session_from_file(INSTAGRAM_USERNAME)
+except FileNotFoundError:
+    L.context.log("Session file does not exist, logging in.")
     L.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
-except instaloader.exceptions.ConnectionException as e:
-    print(f"Failed to login to Instagram: {e}")
-    exit(1)
+    L.save_session_to_file()
 
 def download_instagram_post(url):
     try:
